@@ -20,7 +20,8 @@ class HttpThrottledService:
                     f"{self._base_url}/{rel_url.lstrip('/')}",
                     params=query,
                     headers=self._headers) as response:
-                return await response.json()
+                raw = await response.json()
+                return raw
 
     async def post_async(
             self, rel_url: str, query: Optional[dict] = None, body: Optional[dict] = None) -> Optional[dict]:
