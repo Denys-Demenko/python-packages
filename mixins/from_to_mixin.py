@@ -16,9 +16,14 @@ class FromToMixin:
 
     @classmethod
     def from_db(cls: Type[T], db_obj) -> T:
-        return cls.from_dict(cls.to_dict(db_obj))
+        return cls.from_dict(FromToMixin.to_dict(db_obj))
 
     def to_dict(self) -> dict:
         if isinstance(self, models.Model):
-            return model_to_dict(self)
+            data = model_to_dict(self)
+            for field in self._meta.fields:
+                if field.is_relation and field.name in data:
+                    data[field.name + '_id'] = getattr(self, field.attname)
+                    del data[field.name]
+            return data
         return self.__dict__
