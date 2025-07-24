@@ -8,9 +8,10 @@ T = TypeVar("T")
 
 
 class ClassDiscovererMixin:
-    def __init__(self, generic_constraint: Type[T], files_pattern: str, class_suffix: str):
+    def __init__(self, generic_constraint: Type[T], root_dir: str, files_pattern: str, class_suffix: str):
         self._entity_base_class = generic_constraint
         self._files_pattern = files_pattern
+        self._root_dir = root_dir
         self._class_suffix = class_suffix
         self._types: Dict[str, Type[T]] = {}
         self._discover_types()
@@ -31,10 +32,10 @@ class ClassDiscovererMixin:
                 self._types[entity_name] = subclass
 
     def _preload_types(self):
-        src_path = Path(__file__).resolve().parent.parent
-        for py_file in src_path.rglob(self._files_pattern):
+        root_resolved_path = Path(self._root_dir).resolve()
+        for py_file in root_resolved_path.rglob(self._files_pattern):
             try:
-                rel_path = py_file.relative_to(src_path)
+                rel_path = py_file.relative_to(root_resolved_path)
                 module_name = ".".join(rel_path.with_suffix("").parts)
                 importlib.import_module(module_name)
             except (ImportError, ValueError):
