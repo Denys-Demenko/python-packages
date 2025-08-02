@@ -34,9 +34,6 @@ class ClassDiscovererMixin:
     def _preload_types(self):
         root_resolved_path = Path(self._root_dir).resolve()
         for py_file in root_resolved_path.rglob(self._files_pattern):
-            try:
-                rel_path = py_file.relative_to(root_resolved_path)
-                module_name = ".".join(rel_path.with_suffix("").parts)
-                importlib.import_module(module_name)
-            except (ImportError, ValueError):
-                pass
+            rel_path = py_file.relative_to(root_resolved_path)
+            module_name = ".".join(rel_path.with_suffix("").parts)
+            importlib.import_module(module_name)
