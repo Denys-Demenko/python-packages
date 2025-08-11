@@ -16,5 +16,5 @@ class SingletonMeta(type):
                 return inst
             obj = object.__new__(cls)
             cls._instances[cls] = obj
-            super(cls, obj).__init__(*args, **kwargs)
+            obj.__init__(*args, **kwargs)
             return obj
