@@ -7,6 +7,7 @@ from packages.throttling.throttle_token_bucket import ThrottleTokenBucket
 
 class ThrottleService:
     """Token bucket throttling implementation."""
+    WAIT_TIME_THRESHOLD_SECONDS = 20
 
     def __init__(self, config: ThrottleConfig):
         """Initialize _throttler with configuration."""
@@ -23,7 +24,7 @@ class ThrottleService:
             if bucket:
                 wait_time = bucket.locked_for()
                 if wait_time:
-                    if bucket.wait:
+                    if bucket.wait or wait_time < self.WAIT_TIME_THRESHOLD_SECONDS:
                         await asyncio.sleep(wait_time)
                     else:
                         return False
