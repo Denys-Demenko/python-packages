@@ -1,6 +1,5 @@
-from django.forms.models import model_to_dict
-from django.db import models
 from typing import Type, TypeVar
+from sqlalchemy.inspection import inspect
 
 T = TypeVar("T")
 
@@ -19,11 +18,15 @@ class FromToMixin:
         return cls.from_dict(FromToMixin.to_dict(db_obj))
 
     def to_dict(self) -> dict:
-        if isinstance(self, models.Model):
-            data = model_to_dict(self)
-            for field in self._meta.fields:
-                if field.is_relation and field.name in data:
-                    data[field.name + '_id'] = getattr(self, field.attname)
-                    del data[field.name]
-            return data
-        return self.__dict__
+        # Check if this is a SQLAlchemy model
+        if hasattr(self, '__table__'):
+            # SQLAlchemy model
+            result = {}
+            mapper = inspect(self.__class__)
+            for column in mapper.columns:
+                val = getattr(self, column.name)
+                if not column.primary_key or val is not None:
+                    result[column.name] = val
+            return result
+        # Regular object
+        return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
